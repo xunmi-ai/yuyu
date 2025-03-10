@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小雨</title>
+    <style>
+                      /* 添加音乐控制样式 */
+                      .music-player {
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: rgba(255,255,255,0.9);
+                    padding: 10px;
+                    border-radius: 20px;
+                    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+                    z-index: 1000;
+                }
+        
+                .music-controls {
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;
+                }
+        
+                .music-btn {
+                    width: 30px;
+                    height: 30px;
+                    border: none;
+                    background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black"><path d="M8 5v14l11-7z"/></svg>');
+                    cursor: pointer;
+                }
+        
+                .volume-slider {
+                    width: 100px;
+                }
+      /* 基础样式 */
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #4facfe 0%, #1100fe 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        #mainGif {
+            width: 100%;
+            height: auto;
+            border-radius: 15px;
+            margin: 1rem 0;
+            border: 3px solid #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .title {
+            color: #2c3e50;
+            font-size: 2rem;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #btnYes {
+            background: #cc2e2e;
+            color: rgb(255, 255, 255);
+        }
+
+        #btnNo {
+            background: #3c80e7;
+            color: rgb(255, 255, 255);
+        }
+
+        .popup-img {
+            position: fixed;
+            width: 100px;
+            animation: pop 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes pop {
+            0% { transform: scale(0) rotate(0deg); }
+            40% { transform: scale(1.2) rotate(20deg); }
+            70% { transform: scale(0.9) rotate(-10deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        /* 媒体查询 */
+        @media (min-width: 768px) {
+            .btn-group {
+                flex-direction: row;
+                gap: 5rem;
+            }
+
+            .title {
+                font-size: 2.5rem;
+            }
+
+            .btn {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img id="mainGif" src="https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExMm1xeWx5Y2czZDVueXVpbWZobmZjOGprbjlqZXIxOWFicjQ2anJ2aiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l1J9sByLuRCB3ZwfS/giphy.gif" alt="动态图">
+        <div class="title">✨ 丹阳买房找小雨 ✨</div>
+        <div class="btn-group">
+            <button class="btn" id="btnYes" onclick="handleYes()">✔ 必须的！</button>
+            <button class="btn" id="btnNo" onclick="handleNo()">✘ 不可能</button>
+        </div>
+    </div>
+
+    <script>
+        // 修改createPopupImage函数（替换原有函数）
+        function createPopupImage(isPositive) {
+            const popup = document.createElement('img');
+            popup.className = 'popup-img';
+            popup.src = `https://s1.aigei.com/src/img/gif/63/63499bdb52214b2ea5c7f1d869674ef9.gif?imageMogr2/auto-orient/thumbnail/!282x282r/gravity/Center/crop/282x282/quality/85/%7CimageView2/2/w/282&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:KDBwaHZwnBO4ymjNSsv7McFgrLs=`;
+            
+            // 设置随机位置和旋转
+            popup.style.left = `${Math.random()*75 + 10}%`;
+            popup.style.top = `${Math.random()*75 + 10}%`;
+            popup.style.transform = `rotate(${Math.random()*30 - 15}deg)`;
+            
+            // 随机颜色效果（新增部分）
+            const randomHue = Math.floor(Math.random() * 360);
+            const randomSaturation = 70 + Math.floor(Math.random() * 30);
+            popup.style.filter = `
+                hue-rotate(${randomHue}deg)
+                saturate(${randomSaturation}%)
+                contrast(330%)
+            `;
+            
+            // 随机混合模式（可选效果）
+            const blendModes = ['multiply', 'screen', 'overlay'];
+            popup.style.mixBlendMode = blendModes[Math.floor(Math.random() * blendModes.length)];
+            
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1500);
+        }
+        </script>
+        
+        <style>
+        /* 新增滤镜动画 */
+        .popup-img {
+            /* ...原有样式保持不变... */
+            animation: pop 0.8s ease, colorShift 1.5s infinite;
+        }
+        
+        @keyframes colorShift {
+            0% { filter: hue-rotate(0deg); }
+            50% { filter: hue-rotate(180deg); }
+            100% { filter: hue-rotate(360deg); }
+        }
+        </style>
+</body>
+</html>
+</style>
+<!-- 在原有内容下方添加音乐播放器 -->
+<div class="music-player">
+<div class="music-controls">
+    <button class="music-btn" onclick="toggleMusic()"></button>
+    <input type="range" class="volume-slider" min="0" max="1" step="0.1" 
+           value="0.5" oninput="setVolume(this.value)">
+</div>
+</div>
+
+<script>
+// 音乐配置
+const audio = new Audio('https://www.cxpan.com/upload/1/20250310/3554123ebc98e102fc105492cc9722f0.mp3 ');
+audio.loop = true; // 循环播放
+audio.volume = 0.5; // 初始音量
+
+// 音乐控制函数
+let isPlaying = false;
+
+function toggleMusic() {
+    if(isPlaying) {
+        audio.pause();
+    } else {
+        audio.play();
+    }
+    isPlaying = !isPlaying;
+    updateButtonIcon();
+}
+
+function setVolume(value) {
+    audio.volume = value;
+}
+
+function updateButtonIcon() {
+    const btn = document.querySelector('.music-btn');
+    const icon = isPlaying ? 
+        '<path d="M6 4h4v16H6zm8 0h4v16h-4z"/>' : 
+        '<path d="M8 5v14l11-7z"/>';
+    btn.style.backgroundImage = `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="black">${icon}</svg>')`;
+}
+
+// 自动播放（需要用户交互）
+document.addEventListener('click', () => {
+    if(!audio.played.length) {
+        audio.play();
+        isPlaying = true;
+        updateButtonIcon();
+    }
+}, {once: true});
+// 添加进度条控制
+audio.addEventListener('timeupdate', () => {
+   const progress = (audio.currentTime / audio.duration) * 100;
+   // 更新进度条样式
+});
+
+// 添加键盘控制
+document.addEventListener('keydown', (e) => {
+   if(e.code === 'Space') toggleMusic();
+});
+</script>
+</body>
+</html>
+    <script>
+        let noClickCount = 0;
+        const yesImages = [
+            'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcThraWF2cTdmd201ZGkyY2RjemZ0cWxiYW14b2plMXJnYWc4MnJzdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/icIr8rk03xQI6NS67S/giphy.gif',
+            'https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExcThraWF2cTdmd201ZGkyY2RjemZ0cWxiYW14b2plMXJnYWc4MnJzdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/Y4P943aTJRCYfperyN/giphy.gif'
+        ];
+        const noImages = [
+            'https://s1.aigei.com/src/img/gif/71/7108adcc77a74e2aa755e436e0acb797.gif?e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:d0rF2oEWhgcdrbdhcDg_Zw-wopc=',
+            'https://s1.aigei.com/src/img/gif/bc/bcee1eeac84e41f7bd611b4aa8957484.gif?imageMogr2/auto-orient/thumbnail/!282x282r/gravity/Center/crop/282x282/quality/85/%7CimageView2/2/w/282&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:EkT68PQghAeFYcP-QRlHo7r_Tk4=',
+            'https://s1.aigei.com/src/img/gif/7d/7d3c9eb83aea4f4e973b9faeef888b24.gif?imageMogr2/auto-orient/thumbnail/!282x240r/gravity/Center/crop/282x240/quality/85/%7CimageView2/2/w/282&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:46XVh_e9kgOjeYnykjA3FwnDWsk='
+        ];
+
+        function handleYes() {
+            const randomIndex = Math.floor(Math.random() * yesImages.length);
+            document.getElementById('mainGif').src = yesImages[randomIndex];
+            resetButtons();
+            createPopupImage(true);
+        }
+
+        function handleNo() {
+            noClickCount++;
+            const yesBtn = document.getElementById('btnYes');
+            yesBtn.style.transform = `scale(${1 + noClickCount * 0.3})`;
+            yesBtn.style.margin = `${noClickCount * 3}px`;
+
+            if (noClickCount % 1 === 0) {
+                const randomIndex = Math.floor(Math.random() * noImages.length);
+                document.getElementById('mainGif').src = noImages[randomIndex];
+            }
+            createPopupImage(false);
+        }
+
+        function createPopupImage(isPositive) {
+            const popup = document.createElement('img');
+            popup.className = 'popup-img';
+            popup.src = `https://s1.aigei.com/src/img/gif/63/63499bdb52214b2ea5c7f1d869674ef9.gif?imageMogr2/auto-orient/thumbnail/!282x282r/gravity/Center/crop/282x282/quality/85/%7CimageView2/2/w/282&e=2051020800&token=P7S2Xpzfz11vAkASLTkfHN7Fw-oOZBecqeJaxypL:KDBwaHZwnBO4ymjNSsv7McFgrLs=`;
+
+            popup.style.left = `${Math.random() * 75 + 10}%`;
+            popup.style.top = `${Math.random() * 75 + 10}%`;
+            popup.style.transform = `rotate(${Math.random() * 30 - 15}deg)`;
+
+            if (isPositive) {
+                popup.style.filter = 'hue-rotate(120deg)';
+            } else {
+                popup.style.filter = 'hue-rotate(300deg)';
+            }
+
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1500);
+        }
+
+        function resetButtons() {
+            noClickCount = 0;
+            const yesBtn = document.getElementById('btnYes');
+            yesBtn.style.transform = 'scale(1)';
+            yesBtn.style.margin = '0';
+        }
+    </script>
+</body>
+</html>
